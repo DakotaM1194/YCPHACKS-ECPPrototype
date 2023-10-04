@@ -1,0 +1,120 @@
+// To understand how this template works, please look at the index.mjs file where the "get /hardwareCheckout" route is defined.
+// And then look at the "mockData/tableData.mjs" file to see how the data is generated.
+// Modify the mock table data to fit your needs.
+// Feel free to turn the feature flags on and off to see how they work.
+doctype html
+html
+  head
+    title Dynamic Table
+    link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css")
+    script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js")
+    //- script(src="/public/helpers/table.js")
+
+  body
+    .container.mt-4
+      // If the seachable flag is on
+      if searchable
+        // Search box
+        .input-group.mb-3
+          input#searchInput(type="text" class="form-control" placeholder="Search...")
+          .input-group-append
+            // On click, call the search function with the value of the search box
+            button.btn.btn-outline-secondary(type="button" id="searchBtn" onclick="search($('#searchInput').val())") Search
+
+      if filterable
+        // Filter options (You'll have to define what these are, not ready yet)
+        select(class="custom-select mb-3" id="filterSelect")
+          option(value="all") All
+          // Add more filter options if necessary
+
+      // Dynamic Table
+      table.table
+        thead
+          tr
+            // For each loops through the columns array and creates a table header for each column
+            // col grabs the value of the current column
+            // index grabs the index of the current column
+            each col, index in columns
+              th(scope="col")
+                | #{col}
+                // If the sortable flag is on
+                if sortable
+                  // On click, call the sort function with the index of the column
+                  // The sort function doesn't yet work for reverse sorting
+                  a(href="#" data-sort-index=index id="sort_#{index}" onclick=`onSort(${index})`) ▼
+        tbody
+          // For each loops through the data array and creates a table row for each row
+          each row in data
+            tr
+              // For each loops through the row array and creates a table cell for each cell
+              each cell in row
+                td= cell
+
+      script.
+        // This is a Pug variable that is passed in from the server
+        // The jsStringify function converts the Pug variable into a JavaScript variable
+        // This was added to avoid an error, I will look for a better solution in the future if there is one
+        var data = !{jsStringify(data)};
+        console.log(data);
+
+        // Search Function
+        function searchData(query) {
+          return data.filter(row =>
+          row.some(cell => cell.toString().toLowerCase().includes(query.toLowerCase()))
+          );
+        }
+
+        // Sort Function (by column index)
+        function sortData(index) {
+          return data.sort((a, b) => {
+            var itemA = a[index].toString().toLowerCase();
+            var itemB = b[index].toString().toLowerCase();
+            
+            if (itemA < itemB) return -1;
+            if (itemA > itemB) return 1;
+            return 0;
+          });
+        }
+
+        // Placeholder Filter Function
+        function filterData(filterValue) {
+          // Basic example. Adjust this function to fit actual filtering needs
+          return filterValue === "all" ? data : data.filter(row => row.includes(filterValue));
+        }
+
+        // Render Table Function
+        function renderTable(tableData) {
+          // Grabs the table body
+          var tbody = $('table tbody');
+          // Clears the table body
+          tbody.empty();
+          // For each loops through the table data and creates a table row for each row
+          tableData.forEach(row => {
+            // Adds a table row
+            var tr = $('<tr></tr>');
+            // For each loops through the row and creates a table cell for each cell
+            row.forEach(cell => {
+              // Adds a table cell
+              tr.append(`<td>${cell}</td>`);
+            });
+            // Adds the row to the table body
+            tbody.append(tr);
+          });
+        }
+
+        // Event Listeners
+        function search(searchQuery) {
+          var filteredData = searchData(searchQuery);
+          renderTable(filteredData);
+        }
+        
+
+        function onSort(index) {
+          var sortedData = sortData(index);
+          renderTable(sortedData);
+        }
+
+        function onFilter(filterValue) {
+          var filteredData = filterData(filterValue);
+          renderTable(filteredData);
+        }

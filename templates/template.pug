@@ -1,0 +1,85 @@
+doctype html
+html
+  head
+    title YCPHacks 2023 Dashboard
+    link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css")
+    script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js")
+    script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js")
+
+  body
+    nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
+      a.navbar-brand(href="#") Dashboard
+      button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation")
+        span.navbar-toggler-icon
+      #navbarNav.collapse.navbar-collapse
+        ul.navbar-nav
+          li.nav-item.active
+            a.nav-link(href="#") Home
+          li.nav-item
+            a.nav-link(href="#") Profile
+          li.nav-item
+            a.nav-link(href="#") Settings
+          li.nav-item
+            a.nav-link(href="/hardwareCheckout") Hardware Checkout
+
+    .container.mt-4
+      .row
+        .col-md-4
+          .card
+            .card-header Dashboard Widget 1
+            .card-body
+              p This is the content for the first dashboard widget.
+
+        .col-md-4
+          .card
+            .card-header Dashboard Widget 2
+            .card-body
+              p This is the content for the second dashboard widget.
+
+        .col-md-4
+          .card
+            .card-header Dashboard Widget 3
+            .card-body
+              p This is the content for the third dashboard widget.
+          body
+      
+      .container.mt-4
+        // This is the form that sends the content to Discord
+        form#discordForm(onsubmit='onSubmit($("#header").val(), $("#body").val(), $("#roles").val(), $("#file").val())')
+          .form-group
+            label(for="header") Header
+            input#header.form-control(type="text" name="header" placeholder="Enter Header Here")
+            label(for="body") Body
+            input#body.form-control(type="text" name="body" placeholder="Enter Body Here")
+            label(for="roles") @roles
+            select#roles.form-control(type="select" name="roles")
+              option(value="0") --Select Roles Here--
+              option(value="1") Everyone
+              option(value="2") Developers
+              option(value="3") Clients
+            label(for="file") File
+            input#file.form-control(type="file" name="file")
+          .form-group
+            button.btn.btn-primary(type="submit") Submit
+          
+
+    footer.mt-4.text-center
+      p &copy; 2023 My Dashboard App
+  
+    script.
+      // This function is called when the form is submitted
+      function onSubmit(header, body, roles, file) {
+        const options = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({header: header, body: body, roles: roles, file: file})
+        }
+        console.log(options);
+        // Need to find an easier way to connect to our own endpoint here
+        // But we do a POST to the /remoteWebhook endpoint with the options we just created
+        // This should send the content to the Discord channel through the DigitalOcean remote function
+        fetch('/remoteWebhook', options);
+      }
